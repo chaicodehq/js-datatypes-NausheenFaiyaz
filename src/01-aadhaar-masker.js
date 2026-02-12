@@ -29,4 +29,12 @@
  */
 export function maskAadhaar(aadhaarNumber) {
   // Your code here
+  if (
+    typeof aadhaarNumber !== "string" ||
+    aadhaarNumber.length !== 12 ||
+    isNaN(aadhaarNumber)
+  ) {
+    return "INVALID";
+  }
+  return "XXXX-".repeat(2) + aadhaarNumber.slice(8, 12);
 }
