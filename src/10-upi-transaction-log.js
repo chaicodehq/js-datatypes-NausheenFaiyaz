@@ -48,4 +48,73 @@
  */
 export function analyzeUPITransactions(transactions) {
   // Your code here
+  if (!Array.isArray(transactions) || transactions.length === 0) return null;
+
+  const validTransaction = transactions.filter((item) => {
+    const isValidAmount = Number.isFinite(item.amount) && item.amount > 0;
+    const isValidType = item.type === "credit" || item.type === "debit";
+    return isValidAmount && isValidType;
+  });
+
+  if (validTransaction.length === 0) return null;
+
+  const totalCredit = validTransaction
+    .filter((item) => item.type === "credit")
+    .map((txn) => txn.amount)
+    .reduce((sum, amt) => sum + amt, 0);
+
+  const totalDebit = validTransaction
+    .filter((item) => item.type === "debit")
+    .map((txn) => txn.amount)
+    .reduce((sum, amt) => sum + amt, 0);
+
+  const netBalance = totalCredit - totalDebit;
+  const transactionCount = validTransaction.length;
+  const sumOfAllAmount = validTransaction
+    .map((txn) => txn.amount)
+    .reduce((sum, amt) => sum + amt, 0);
+  const avgTransaction = Math.round(sumOfAllAmount / transactionCount);
+
+  const highestTransaction = validTransaction.reduce((max, curr) =>
+    curr.amount > max.amount ? curr : max,
+  );
+  const categoryBreakdown = validTransaction.reduce((acc, txn) => {
+    const category = txn.category;
+    const amount = txn.amount;
+    acc[category] = (acc[category] || 0) + amount;
+    return acc;
+  }, {});
+
+  const contactCount = validTransaction.reduce((acc, txn) => {
+    acc[txn.to] = (acc[txn.to] || 0) + 1;
+    return acc;
+  }, {});
+
+  let frequentContact = null;
+  let maxCount = 0;
+
+  for (let txn of validTransaction) {
+    if (contactCount[txn.to] > maxCount) {
+      maxCount = contactCount[txn.to];
+      frequentContact = txn.to;
+    }
+  }
+
+  const allAbove100 = validTransaction.every((item) => item.amount > 100);
+  const hasLargeTransaction = validTransaction.some(
+    (item) => item.amount >= 5000,
+  );
+
+  return {
+    totalCredit,
+    totalDebit,
+    netBalance,
+    transactionCount,
+    avgTransaction,
+    highestTransaction,
+    categoryBreakdown,
+    frequentContact,
+    allAbove100,
+    hasLargeTransaction,
+  };
 }
